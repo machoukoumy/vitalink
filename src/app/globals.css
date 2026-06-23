@@ -165,7 +165,7 @@ body.modal-open {
 /* Print styles */
 @media print {
   .pb-safe { padding-bottom: 0 !important; }
-  nav, header, .print\\:hidden { display: none !important; }
+  nav, header, aside, [data-print-hide] { display: none !important; }
   body, html { overflow: visible !important; height: auto !important; }
   main { overflow: visible !important; }
 }
