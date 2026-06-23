@@ -13,8 +13,7 @@ function createPrismaClient() {
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
     const adapter = new PrismaLibSql(libsql);
-    // @ts-expect-error adapter type mismatch between Prisma versions
-    return new PrismaClient({ adapter });
+    return new PrismaClient({ adapter } as never);
   }
   return new PrismaClient();
 }
