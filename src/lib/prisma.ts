@@ -3,27 +3,25 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma: any };
 
-function createPrismaClient() {
-  const tursoUrl = process.env.TURSO_DATABASE_URL;
-  const tursoToken = process.env.TURSO_AUTH_TOKEN;
+const TURSO_URL = process.env.TURSO_DATABASE_URL || "libsql://vitalink-machoukoumy.aws-us-east-1.turso.io";
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODIyMDgyODYsImlkIjoiMDE5ZWYzZTMtZGQwMS03NzA2LWEwNGItZDY3ZTQxZTNkYmY0IiwicmlkIjoiMGQxMGQxODEtZDE5YS00YWM3LWIyMmMtZjVhNGZkOGY3ZGI5In0.ImhSM3lBcy7dGfa4gKiJTywTX06NSlhRlS5HIuMWSghFWZKet8uJqFO-De5iOxe-ya5ySIl3v5a1L_FGLL57AA";
 
-  if (tursoUrl && tursoToken) {
+function createPrismaClient() {
+  // In production or when Turso URL starts with libsql://, use Turso
+  if (TURSO_URL.startsWith("libsql://")) {
     try {
       const { createClient } = require("@libsql/client");
       const { PrismaLibSql } = require("@prisma/adapter-libsql");
-      const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
+      const libsql = createClient({ url: TURSO_URL, authToken: TURSO_TOKEN });
       const adapter = new PrismaLibSql(libsql);
       return new PrismaClient({ adapter } as any);
     } catch {
-      // Fallback silently during build
+      // During build, adapter may not work - fall through
     }
   }
 
-  try {
-    return new PrismaClient();
-  } catch {
-    return null;
-  }
+  // Local dev with SQLite file
+  return new PrismaClient();
 }
 
 export const prisma: any = globalForPrisma.prisma || createPrismaClient();
