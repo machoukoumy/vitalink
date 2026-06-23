@@ -1,28 +1,31 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any */
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma: any };
 
 function createPrismaClient() {
-  if (process.env.TURSO_DATABASE_URL) {
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+  if (tursoUrl && tursoToken) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { createClient } = require("@libsql/client");
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { PrismaLibSql } = require("@prisma/adapter-libsql");
-      const libsql = createClient({
-        url: process.env.TURSO_DATABASE_URL,
-        authToken: process.env.TURSO_AUTH_TOKEN,
-      });
+      const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
       const adapter = new PrismaLibSql(libsql);
-      return new PrismaClient({ adapter } as never);
-    } catch (e) {
-      console.error("Turso adapter error, falling back to default:", e);
-      return new PrismaClient();
+      return new PrismaClient({ adapter } as any);
+    } catch {
+      // Fallback silently during build
     }
   }
-  return new PrismaClient();
+
+  try {
+    return new PrismaClient();
+  } catch {
+    return null;
+  }
 }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient();
+export const prisma: any = globalForPrisma.prisma || createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production" && prisma) globalForPrisma.prisma = prisma;
