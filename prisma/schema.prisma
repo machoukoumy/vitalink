@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Center {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("PROVINCIAL")
+  province  String
+  address   String
+  phone     String?
+  email     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  donors     Donor[]
+  donations  Donation[]
+  bloodStock BloodStock[]
+  appointments Appointment[]
+}
+
+model Hospital {
+  id        String   @id @default(cuid())
+  name      String
+  province  String
+  address   String
+  phone     String?
+  email     String?
+  type      String   @default("PUBLIC")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  bloodRequests BloodRequest[]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String
+  name       String
+  phone      String?
+  avatar     String?
+  role       String   @default("DONOR")
+  isActive   Boolean  @default(true)
+  centerId   String?
+  center     Center?  @relation(fields: [centerId], references: [id])
+  hospitalId String?
+  hospital   Hospital? @relation(fields: [hospitalId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  donor         Donor?
+  notifications Notification[]
+}
+
+model Donor {
+  id            String   @id @default(cuid())
+  matricule     String   @unique
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centerId      String?
+  center        Center?  @relation(fields: [centerId], references: [id])
+  bloodGroup    String
+  rhFactor      String
+  dateOfBirth   DateTime
+  gender        String
+  address       String
+  nationalId    String   @unique
+  weight        Float?
+  lastDonation  DateTime?
+  isEligible    Boolean  @default(true)
+  medicalNotes  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  donations      Donation[]
+  appointments   Appointment[]
+  donorResponses DonorResponse[]
+  donorRequests  DonorRequest[]
+}
+
+model DonorRequest {
+  id          String   @id @default(cuid())
+  donorId     String
+  donor       Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  bloodGroup  String
+  rhFactor    String
+  quantity    Float
+  urgency     String   @default("NORMAL")
+  status      String   @default("PENDING")
+  reason      String?
+  city        String
+  nearestCenter String?
+  contactPhone String?
+  notes       String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+}
+
+model Donation {
+  id           String   @id @default(cuid())
+  donorId      String
+  donor        Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  centerId     String?
+  center       Center?  @relation(fields: [centerId], references: [id])
+  date         DateTime @default(now())
+  bloodGroup   String
+  rhFactor     String
+  quantity     Float    @default(450)
+  status       String   @default("PENDING")
+  hemoglobin   Float?
+  bloodPressure String?
+  temperature  Float?
+  notes        String?
+  collectedBy  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bloodStock   BloodStock?
+}
+
+model BloodStock {
+  id          String   @id @default(cuid())
+  donationId  String?  @unique
+  donation    Donation? @relation(fields: [donationId], references: [id])
+  centerId    String?
+  center      Center?  @relation(fields: [centerId], references: [id])
+  bloodGroup  String
+  rhFactor    String
+  quantity    Float
+  status      String   @default("AVAILABLE")
+  collectedAt DateTime @default(now())
+  expiresAt   DateTime
+  storageLocation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  donorId   String
+  donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  centerId  String?
+  center    Center?  @relation(fields: [centerId], references: [id])
+  date      DateTime
+  time      String
+  status    String   @default("SCHEDULED")
+  type      String   @default("DONATION")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BloodRequest {
+  id          String   @id @default(cuid())
+  hospitalId  String
+  hospital    Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  bloodGroup  String
+  rhFactor    String
+  quantity    Float
+  urgency     String   @default("NORMAL")
+  status      String   @default("PENDING")
+  patientInfo String?
+  reason      String?
+  contactName String?
+  contactPhone String?
+  fulfilledAt DateTime?
+  fulfilledBy String?
+  notes       String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  donorResponses DonorResponse[]
+}
+
+model DonorResponse {
+  id             String   @id @default(cuid())
+  donorId        String
+  donor          Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  bloodRequestId String
+  bloodRequest   BloodRequest @relation(fields: [bloodRequestId], references: [id], onDelete: Cascade)
+  status         String   @default("ACCEPTED")
+  message        String?
+  availableDate  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([donorId, bloodRequestId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
