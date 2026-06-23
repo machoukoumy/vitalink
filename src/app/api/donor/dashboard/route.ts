@@ -56,7 +56,7 @@ export async function GET() {
       daysUntilEligible = Math.max(0, minInterval - daysSinceLast);
     }
 
-    const totalQuantity = recentDonations.reduce((s, d) => s + d.quantity, 0);
+    const totalQuantity = recentDonations.reduce((s: number, d: { quantity: number }) => s + d.quantity, 0);
 
     return Response.json({
       donor: {
