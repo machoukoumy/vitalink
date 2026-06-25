@@ -7,7 +7,7 @@ import { VitaLinkLogoFull, VitaLinkLogoCompact } from "./VitaLinkLogo";
 import {
   LayoutDashboard, Users, Droplets, Calendar, Package, BarChart3,
   Bell, Settings, UserCog, Heart, LogOut, Building2,
-  Hospital, AlertTriangle, Globe, Shield, FileText, ChevronRight,
+  Hospital, AlertTriangle, Globe, Shield, FileText, ChevronRight, Mail, MapPin,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -43,6 +43,9 @@ const adminNav: NavItem[] = [
   { label: "Demandes", shortLabel: "Demandes", href: "/admin/demandes", icon: <AlertTriangle size={20} />, mobileTab: true },
   { label: "Rendez-vous", shortLabel: "RDV", href: "/admin/rendez-vous", icon: <Calendar size={20} /> },
   { label: "Statistiques", shortLabel: "Stats", href: "/admin/statistiques", icon: <BarChart3 size={20} /> },
+  { label: "Campagnes", shortLabel: "Campagnes", href: "/admin/campagnes", icon: <Calendar size={20} /> },
+  { label: "Export", shortLabel: "Export", href: "/admin/export", icon: <FileText size={20} /> },
+  { label: "Messages", shortLabel: "Messages", href: "/admin/messages", icon: <Mail size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/admin/notifications", icon: <Bell size={20} /> },
   { label: "Paramètres", shortLabel: "Config", href: "/admin/parametres", icon: <Settings size={20} /> },
 ];
@@ -55,6 +58,7 @@ const personnelNav: NavItem[] = [
   { label: "Stock Sanguin", shortLabel: "Stock", href: "/personnel/stock", icon: <Package size={20} />, mobileTab: true },
   { label: "Rendez-vous", shortLabel: "RDV", href: "/personnel/rendez-vous", icon: <Calendar size={20} />, mobileTab: true },
   { label: "Mon Dossier", shortLabel: "Dossier", href: "/personnel/mon-dossier", icon: <FileText size={20} /> },
+  { label: "Messages", shortLabel: "Messages", href: "/personnel/messages", icon: <Mail size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/personnel/notifications", icon: <Bell size={20} /> },
 ];
 
@@ -66,6 +70,7 @@ const hospitalNav: NavItem[] = [
   { label: "Urgences publiques", shortLabel: "Urgences", href: "/hopital/urgences", icon: <AlertTriangle size={20} />, mobileTab: true },
   { label: "Appels aux dons", shortLabel: "Appels", href: "/hopital/appels", icon: <Globe size={20} />, mobileTab: true },
   { label: "Dossier Hôpital", shortLabel: "Dossier", href: "/hopital/dossier", icon: <FileText size={20} /> },
+  { label: "Messages", shortLabel: "Messages", href: "/hopital/messages", icon: <Mail size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/hopital/notifications", icon: <Bell size={20} /> },
 ];
 
@@ -78,6 +83,10 @@ const donorNav: NavItem[] = [
   { label: "Mes Demandes", shortLabel: "Demandes", href: "/donneur/mes-demandes", icon: <Globe size={20} /> },
   { label: "Rendez-vous", shortLabel: "RDV", href: "/donneur/rendez-vous", icon: <Calendar size={20} /> },
   { label: "Mon Dossier", shortLabel: "Dossier", href: "/donneur/mon-dossier", icon: <FileText size={20} /> },
+  { label: "Campagnes", shortLabel: "Campagnes", href: "/donneur/campagnes", icon: <Calendar size={20} /> },
+  { label: "Certificats", shortLabel: "Certifs", href: "/donneur/certificat", icon: <FileText size={20} /> },
+  { label: "Messages", shortLabel: "Messages", href: "/donneur/messages", icon: <Mail size={20} /> },
+  { label: "Carte des centres", shortLabel: "Carte", href: "/donneur/carte", icon: <MapPin size={20} /> },
   { label: "Mon Profil", shortLabel: "Profil", href: "/donneur/profil", icon: <Users size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/donneur/notifications", icon: <Bell size={20} /> },
 ];

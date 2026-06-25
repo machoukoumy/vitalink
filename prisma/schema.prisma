@@ -25,6 +25,7 @@ model Center {
   donations  Donation[]
   bloodStock BloodStock[]
   appointments Appointment[]
+  campaigns  Campaign[]
 }
 
 model Hospital {
@@ -87,6 +88,7 @@ model Donor {
   appointments   Appointment[]
   donorResponses DonorResponse[]
   donorRequests  DonorRequest[]
+  campaignRegistrations CampaignRegistration[]
 }
 
 model DonorRequest {
@@ -218,4 +220,47 @@ model Notification {
   type      String   @default("INFO")
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  centerId    String?
+  center      Center?  @relation(fields: [centerId], references: [id])
+  targetBloodGroups String?
+  goalQuantity Float?
+  collectedQuantity Float @default(0)
+  status      String   @default("PLANNED")
+  isActive    Boolean  @default(true)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  registrations CampaignRegistration[]
+}
+
+model CampaignRegistration {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  donorId    String
+  donor      Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  status     String   @default("REGISTERED")
+  createdAt  DateTime @default(now())
+
+  @@unique([campaignId, donorId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  subject    String?
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
