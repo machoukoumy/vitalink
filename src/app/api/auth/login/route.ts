@@ -41,9 +41,8 @@ export async function POST(request: NextRequest) {
     );
 
     return response;
-  } catch (e: unknown) {
-    const err = e as Error;
-    console.error("Login error:", err.message, err.name);
-    return Response.json({ error: "Erreur serveur", debug: err.message }, { status: 500 });
+  } catch (e) {
+    console.error("Login error:", e);
+    return Response.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
