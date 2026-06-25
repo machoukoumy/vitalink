@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
-    if (!user || !["ADMIN", "PERSONNEL"].includes(user.role)) {
+    if (!user || !["SUPER_ADMIN", "ADMIN", "PERSONNEL"].includes(user.role)) {
       return Response.json({ error: "Non autorisé" }, { status: 403 });
     }
 
