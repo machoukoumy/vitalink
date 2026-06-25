@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("auth-token")?.value;
   const { pathname } = request.nextUrl;
 
-  const publicPaths = ["/", "/login", "/register", "/urgences"];
+  const publicPaths = ["/", "/login", "/register", "/urgences", "/a-propos", "/mot-de-passe-oublie"];
   const isPublic = publicPaths.includes(pathname);
 
   if (isPublic) {
