@@ -101,7 +101,12 @@ export default function Home() {
           )}
         </div>
 
-        <p className="text-center text-[10px] text-gray-300 mt-3">
+        <div className="flex items-center justify-center gap-3 mt-3">
+          <Link href="/a-propos" className="text-[10px] text-gray-400 font-medium">&Agrave; propos</Link>
+          <span className="text-gray-300">&middot;</span>
+          <Link href="/urgences" className="text-[10px] text-gray-400 font-medium">Urgences</Link>
+        </div>
+        <p className="text-center text-[10px] text-gray-300 mt-1">
           &copy; 2026 VitaLink &middot; D&eacute;velopp&eacute; par{" "}
           <a href="https://jidicom.lovable.app" target="_blank" rel="noopener noreferrer" className="font-bold text-gray-400">JIDICOM</a>
         </p>

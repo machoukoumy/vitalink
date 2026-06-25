@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "VitaLink - Connecter les donneurs. Sauver des vies.",
   description: "VitaLink est la plateforme nationale de gestion du don de sang et de la transfusion sanguine du Tchad.",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

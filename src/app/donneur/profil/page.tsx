@@ -2,15 +2,24 @@
 
 import { useEffect, useState, useRef } from "react";
 import { User, Heart, MapPin, Phone, Mail, CreditCard, Camera, Printer, Clock, CheckCircle, FileText } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import StatusBadge from "@/components/StatusBadge";
 import { VitaLinkLogoFull } from "@/components/VitaLinkLogo";
 import { formatDate, formatDateTime, getBloodGroupLabel } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+interface BadgeItem {
+  id: string;
+  name: string;
+  icon: string;
+  earned: boolean;
+}
+
 export default function ProfilPage() {
   const [me, setMe] = useState<any>(null);
   const [dossier, setDossier] = useState<any>(null);
+  const [badges, setBadges] = useState<BadgeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -22,6 +31,10 @@ export default function ProfilPage() {
         fetch(`/api/dossier/donneur/${d.user.donor.id}`).then(r => r.json()).then(setDossier);
       }
     }).finally(() => setLoading(false));
+    fetch("/api/donor/badges")
+      .then(r => r.json())
+      .then(data => setBadges((data.badges || data || []).filter((b: BadgeItem) => b.earned)))
+      .catch(() => {});
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,6 +107,33 @@ export default function ProfilPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* QR Code & Badges */}
+        <div className="flex flex-wrap items-start gap-6 mt-6 pt-5 border-t border-gray-100">
+          {/* QR Code */}
+          <div className="flex flex-col items-center gap-2">
+            <QRCodeSVG value={donor.matricule} size={120} level="M" />
+            <p className="text-[10px] text-gray-400 font-mono">{donor.matricule}</p>
+          </div>
+
+          {/* Earned badges */}
+          {badges.length > 0 && (
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Badges obtenus</p>
+              <div className="flex flex-wrap gap-2">
+                {badges.map((b) => (
+                  <span
+                    key={b.id}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#E30613]/5 border border-[#E30613]/10 rounded-full text-xs font-medium text-gray-700"
+                    title={b.name}
+                  >
+                    {b.icon} {b.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Info grid */}

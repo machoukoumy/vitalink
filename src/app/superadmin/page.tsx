@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import StatsCard from "@/components/StatsCard";
 import BloodStockChart from "@/components/BloodStockChart";
+import DashboardCharts from "@/components/DashboardCharts";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDateTime, getBloodGroupLabel } from "@/lib/utils";
 
@@ -142,6 +143,9 @@ export default function SuperAdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* Dashboard Charts */}
+      <DashboardCharts />
     </div>
   );
 }

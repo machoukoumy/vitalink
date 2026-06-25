@@ -1,0 +1,25 @@
+{
+  "name": "VitaLink - Transfusion Sanguine",
+  "short_name": "VitaLink",
+  "description": "Plateforme nationale de gestion du don de sang du Tchad",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#E30613",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/don-sang.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/don-sang.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["health", "medical"]
+}

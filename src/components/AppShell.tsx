@@ -8,6 +8,7 @@ import {
   LayoutDashboard, Users, Droplets, Calendar, Package, BarChart3,
   Bell, Settings, UserCog, Heart, LogOut, Building2,
   Hospital, AlertTriangle, Globe, Shield, FileText, ChevronRight, Mail, MapPin,
+  Award, Activity,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -87,6 +88,8 @@ const donorNav: NavItem[] = [
   { label: "Certificats", shortLabel: "Certifs", href: "/donneur/certificat", icon: <FileText size={20} /> },
   { label: "Messages", shortLabel: "Messages", href: "/donneur/messages", icon: <Mail size={20} /> },
   { label: "Carte des centres", shortLabel: "Carte", href: "/donneur/carte", icon: <MapPin size={20} /> },
+  { label: "Badges", shortLabel: "Badges", href: "/donneur/badges", icon: <Award size={20} /> },
+  { label: "Ma Santé", shortLabel: "Santé", href: "/donneur/sante", icon: <Activity size={20} /> },
   { label: "Mon Profil", shortLabel: "Profil", href: "/donneur/profil", icon: <Users size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/donneur/notifications", icon: <Bell size={20} /> },
 ];

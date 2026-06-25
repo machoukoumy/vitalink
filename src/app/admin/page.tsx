@@ -15,6 +15,7 @@ import {
 import StatsCard from "@/components/StatsCard";
 import StatusBadge from "@/components/StatusBadge";
 import BloodStockChart from "@/components/BloodStockChart";
+import DashboardCharts from "@/components/DashboardCharts";
 import { formatDate, getBloodGroupLabel } from "@/lib/utils";
 
 interface Stats {
@@ -379,6 +380,9 @@ export default function AdminDashboard() {
 
       {/* Blood Stock Chart */}
       <BloodStockChart data={stats.stockByGroup} />
+
+      {/* Dashboard Charts */}
+      <DashboardCharts />
     </div>
   );
 }
