@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { VitaLinkLogoFull, VitaLinkLogoCompact } from "./VitaLinkLogo";
+import GlobalSearch from "./GlobalSearch";
 import {
   LayoutDashboard, Users, Droplets, Calendar, Package, BarChart3,
   Bell, Settings, UserCog, Heart, LogOut, Building2,
@@ -90,6 +91,7 @@ const donorNav: NavItem[] = [
   { label: "Badges", shortLabel: "Badges", href: "/donneur/badges", icon: <Award size={20} /> },
   { label: "Ma Santé", shortLabel: "Santé", href: "/donneur/sante", icon: <Activity size={20} /> },
   { label: "Mon Profil", shortLabel: "Profil", href: "/donneur/profil", icon: <Users size={20} /> },
+  { label: "Paramètres", shortLabel: "Config", href: "/donneur/parametres", icon: <Settings size={20} /> },
   { label: "Notifications", shortLabel: "Notifs", href: "/donneur/notifications", icon: <Bell size={20} /> },
 ];
 
@@ -126,6 +128,10 @@ export default function AppShell({ role, userName, children }: { role: string; u
       <aside className="hidden lg:flex w-[272px] flex-col bg-white border-r border-gray-200/80 shadow-sm">
         <div className="p-5 pb-4">
           <VitaLinkLogoFull />
+        </div>
+
+        <div className="px-4 mb-2">
+          <GlobalSearch />
         </div>
 
         <div className="mx-4 mb-3 p-3 rounded-xl bg-[#F5F7FA] border border-gray-100">
