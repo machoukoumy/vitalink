@@ -55,6 +55,11 @@ export default function PersonnelDonneursPage() {
     { key: "isEligible", label: "Éligibilité", render: (d: DonorRecord) => (
       <StatusBadge status={d.isEligible ? "AVAILABLE" : "EXPIRED"} />
     )},
+    { key: "actions", label: "", render: (d: DonorRecord) => (
+      <Link href={`/personnel/donneurs/${d.id}`} className="px-3 py-1.5 bg-[#003DA5] text-white text-xs font-bold rounded-lg hover:bg-[#002D7A]">
+        Voir fiche
+      </Link>
+    )},
   ];
 
   return (

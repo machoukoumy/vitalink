@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate, BLOOD_GROUPS, getBloodGroupLabel } from "@/lib/utils";
@@ -53,7 +54,7 @@ export default function SuperAdminDonneursPage() {
   const columns = [
     { key: "name", label: "Nom", render: (d: DonorRecord) => (
       <div>
-        <p className="font-medium text-gray-900">{d.user.name}</p>
+        <Link href={`/admin/donneurs/${d.id}`} className="font-medium text-gray-900 hover:text-[#E30613] hover:underline">{d.user.name}</Link>
         <p className="text-xs text-gray-500">{d.user.email}</p>
       </div>
     )},

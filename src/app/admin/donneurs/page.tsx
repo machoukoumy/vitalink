@@ -72,6 +72,11 @@ export default function AdminDonneursPage() {
     { key: "isActive", label: "Statut", render: (d: DonorRecord) => (
       <StatusBadge status={d.user.isActive ? "CONFIRMED" : "CANCELLED"} />
     )},
+    { key: "actions", label: "", render: (d: DonorRecord) => (
+      <Link href={`/admin/donneurs/${d.id}`} className="px-3 py-1.5 bg-[#003DA5] text-white text-xs font-bold rounded-lg hover:bg-[#002D7A]">
+        Voir fiche
+      </Link>
+    )},
   ];
 
   return (
