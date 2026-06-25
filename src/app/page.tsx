@@ -1,92 +1,65 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { VitaLinkIcon } from "@/components/VitaLinkLogo";
 import { cn } from "@/lib/utils";
 
 const slides = [
-  { img: "/images/don-sang.png", bg: "bg-white", title: "Donnez votre sang,\nsauvez des vies", desc: "VitaLink connecte les donneurs, les hôpitaux et le CNTS du Tchad.", accent: "text-[#E30613]" },
-  { img: "/images/anemie.png", bg: "bg-red-50", title: "Des enfants\nont besoin de vous", desc: "L'anémie sévère touche des milliers d'enfants. Votre don les sauve.", accent: "text-[#E30613]" },
-  { img: "/images/accident.png", bg: "bg-orange-50", title: "Chaque minute\ncompte", desc: "Les victimes d'accidents ont besoin de transfusions immédiates.", accent: "text-orange-600" },
-  { img: "/images/accouchement.png", bg: "bg-pink-50", title: "Protégez\nles mamans", desc: "L'hémorragie post-partum est la 1ère cause de mortalité maternelle.", accent: "text-pink-600" },
-  { img: "/images/chirurgie.png", bg: "bg-blue-50", title: "Rendez les\nchirurgies possibles", desc: "Chaque intervention nécessite des réserves de sang.", accent: "text-[#003DA5]" },
+  { img: "/images/don-sang.png", title: "Donnez votre sang,\nsauvez des vies", desc: "VitaLink connecte les donneurs, les hôpitaux et le CNTS du Tchad.", accent: "text-[#E30613]" },
+  { img: "/images/anemie.png", title: "Des enfants\nont besoin de vous", desc: "L'anémie sévère touche des milliers d'enfants. Votre don les sauve.", accent: "text-[#E30613]" },
+  { img: "/images/accident.png", title: "Chaque minute\ncompte", desc: "Les victimes d'accidents ont besoin de transfusions immédiates.", accent: "text-orange-600" },
+  { img: "/images/accouchement.png", title: "Protégez\nles mamans", desc: "L'hémorragie post-partum est la 1ère cause de mortalité maternelle.", accent: "text-pink-600" },
+  { img: "/images/chirurgie.png", title: "Rendez les\nchirurgies possibles", desc: "Chaque intervention nécessite des réserves de sang.", accent: "text-[#003DA5]" },
 ];
 
 export default function Home() {
   const [current, setCurrent] = useState(0);
-  const touchStart = useRef(0);
-  const touchEnd = useRef(0);
-
-  const next = useCallback(() => setCurrent(c => (c + 1) % slides.length), []);
-  const prev = useCallback(() => setCurrent(c => (c - 1 + slides.length) % slides.length), []);
-
-  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; };
-  const onTouchMove = (e: React.TouchEvent) => { touchEnd.current = e.touches[0].clientX; };
-  const onTouchEnd = () => {
-    const diff = touchStart.current - touchEnd.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) next();
-      else prev();
-    }
-  };
-
   const slide = slides[current];
   const isLast = current === slides.length - 1;
 
   return (
-    <div
-      className={cn("h-[100dvh] flex flex-col overflow-hidden transition-colors duration-500", slide.bg)}
-      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-    >
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-3 pb-1 md:px-8 md:pt-5 flex-shrink-0"
-        style={{ paddingTop: "calc(12px + var(--safe-top, 0px))" }}>
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-white">
+      {/* Top bar - always clickable */}
+      <div className="flex items-center justify-between px-5 pt-3 pb-2 md:px-8 md:pt-5 flex-shrink-0"
+        style={{ paddingTop: "calc(12px + env(safe-area-inset-top, 0px))" }}>
         <div className="flex items-center gap-2">
           <VitaLinkIcon size={28} />
           <span className="font-extrabold text-[15px] text-[#E30613]">Vita</span>
           <span className="font-extrabold text-[15px] text-[#003DA5]">Link</span>
         </div>
-        <Link href="/login" className="text-sm font-semibold text-gray-500 active:text-[#003DA5]">
+        <Link href="/login" className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded-xl active:bg-gray-200">
           Connexion
         </Link>
       </div>
 
-      {/* Carousel content - swipable */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 md:px-8 relative min-h-0">
-        {/* Image */}
-        <div className="flex items-center justify-center mb-4 md:mb-6" style={{ height: "clamp(180px, 35dvh, 320px)" }}>
+      {/* Image - lazy loaded, smaller */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5 md:px-8 min-h-0">
+        <div className="flex items-center justify-center mb-4" style={{ height: "clamp(160px, 30dvh, 280px)" }}>
           <img
-            key={current}
             src={slide.img}
             alt=""
-            className="max-h-full w-auto object-contain mix-blend-multiply animate-[fadeSlide_0.35s_ease]"
+            className="max-h-full w-auto object-contain mix-blend-multiply"
+            loading="lazy"
             draggable={false}
           />
         </div>
 
-        {/* Text */}
-        <div className="text-center max-w-md mx-auto px-2" key={`t-${current}`}>
-          <h1 className={cn("text-[26px] md:text-5xl font-extrabold leading-[1.15] tracking-tight whitespace-pre-line animate-[fadeSlide_0.35s_ease]", slide.accent)}>
+        <div className="text-center max-w-md mx-auto">
+          <h1 className={cn("text-[24px] md:text-4xl font-extrabold leading-[1.15] tracking-tight whitespace-pre-line", slide.accent)}>
             {slide.title}
           </h1>
-          <p className="text-gray-500 mt-2.5 md:mt-4 text-[15px] md:text-lg leading-relaxed animate-[fadeSlide_0.4s_ease]">
+          <p className="text-gray-500 mt-2 text-[14px] md:text-lg leading-relaxed">
             {slide.desc}
           </p>
         </div>
-
-        {/* Desktop arrows */}
-        <button onClick={prev} className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white rounded-full items-center justify-center shadow-lg border border-gray-100">
-          <ChevronLeft size={24} className="text-gray-600" />
-        </button>
-        <button onClick={next} className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white rounded-full items-center justify-center shadow-lg border border-gray-100">
-          <ChevronRight size={24} className="text-gray-600" />
-        </button>
       </div>
 
-      {/* Bottom section */}
-      <div className="px-5 pb-4 md:px-8 md:pb-6 flex-shrink-0" style={{ paddingBottom: "calc(16px + var(--safe-bottom, 0px))" }}>
+      {/* Bottom - dots + buttons */}
+      <div className="px-5 pb-4 md:px-8 md:pb-6 flex-shrink-0"
+        style={{ paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }}>
+
         {/* Dots */}
         <div className="flex items-center justify-center gap-2 mb-4">
           {slides.map((_, i) => (
@@ -110,18 +83,18 @@ export default function Home() {
                 Se connecter
               </Link>
               <Link href="/urgences"
-                className="w-full py-2.5 text-[#E30613] font-semibold text-sm text-center">
+                className="w-full py-2 text-[#E30613] font-semibold text-sm text-center">
                 Voir les urgences en cours
               </Link>
             </>
           ) : (
             <>
-              <button onClick={next}
+              <button onClick={() => setCurrent(c => c + 1)}
                 className="w-full py-3.5 bg-[#E30613] text-white rounded-2xl font-bold text-[15px] text-center active:bg-[#C00510] flex items-center justify-center gap-2">
                 Suivant <ArrowRight size={18} />
               </button>
               <button onClick={() => setCurrent(slides.length - 1)}
-                className="w-full py-2.5 text-gray-400 font-semibold text-sm text-center active:text-gray-600">
+                className="w-full py-2 text-gray-400 font-semibold text-sm text-center active:text-gray-600">
                 Passer
               </button>
             </>
@@ -133,13 +106,6 @@ export default function Home() {
           <a href="https://jidicom.lovable.app" target="_blank" rel="noopener noreferrer" className="font-bold text-gray-400">JIDICOM</a>
         </p>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeSlide {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
