@@ -3,264 +3,162 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft, User, Mail, Phone, MapPin, CreditCard, Calendar,
-  Droplets, Activity, Heart, Clock, FileText, Printer, Shield,
-  Award, CheckCircle, XCircle,
-} from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
-import StatusBadge from "@/components/StatusBadge";
-import DataTable from "@/components/DataTable";
-import { formatDate, formatDateTime, getBloodGroupLabel, cn } from "@/lib/utils";
+import { ArrowLeft, Printer } from "lucide-react";
+import { VitaLinkIcon } from "@/components/VitaLinkLogo";
+import { formatDate, formatDateTime, getBloodGroupLabel } from "@/lib/utils";
 
-interface DonorDetail {
-  id: string;
-  matricule: string;
-  bloodGroup: string;
-  rhFactor: string;
-  dateOfBirth: string;
-  gender: string;
-  address: string;
-  nationalId: string;
-  weight: number | null;
-  latitude: number | null;
-  longitude: number | null;
-  isEligible: boolean;
-  lastDonation: string | null;
-  medicalNotes: string | null;
-  createdAt: string;
-  user: { name: string; email: string; phone: string | null; createdAt: string };
-  center: { name: string; province: string; phone: string | null; address: string } | null;
-  donations: Array<{
-    id: string; date: string; quantity: number; hemoglobin: number | null;
-    bloodPressure: string | null; temperature: number | null; status: string; notes: string | null;
-  }>;
-  appointments: Array<{ id: string; date: string; status: string; notes: string | null }>;
-  donorResponses: Array<{
-    id: string; status: string; createdAt: string; message: string | null;
-    bloodRequest: { bloodGroup: string; rhFactor: string; urgency: string; hospital: { name: string } };
-  }>;
-  donorRequests: Array<{ id: string; bloodGroup: string; rhFactor: string; quantity: number; urgency: string; status: string; createdAt: string }>;
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface Stats {
-  totalDonations: number;
-  totalQuantity: number;
-  totalAppointments: number;
-  totalResponses: number;
-  acceptedResponses: number;
-  totalRequests: number;
-}
-
-interface Eligibility {
-  isEligible: boolean;
-  daysSinceLast: number | null;
-  daysUntilEligible: number;
-  interval: number;
-  nextDate: string | null;
-}
-
-export default function PersonnelDonorDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const [donor, setDonor] = useState<DonorDetail | null>(null);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [eligibility, setEligibility] = useState<Eligibility | null>(null);
+export default function AdminDonorDetailPage() {
+  const params = useParams();
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!id) return;
-    fetch(`/api/dossier/donneur/${id}`)
-      .then(r => { if (!r.ok) throw new Error("Not found"); return r.json(); })
-      .then(d => { setDonor(d.donor); setStats(d.stats); setEligibility(d.eligibility); })
-      .catch(() => setError("Donneur introuvable"))
-      .finally(() => setLoading(false));
-  }, [id]);
+    if (params.id) {
+      fetch(`/api/dossier/donneur/${params.id}`).then(r => r.json()).then(setData).finally(() => setLoading(false));
+    }
+  }, [params.id]);
 
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-500">Chargement...</div>;
-  if (error || !donor) return (
-    <div className="text-center py-20">
-      <p className="text-gray-500 mb-4">{error || "Donneur introuvable"}</p>
-      <Link href="/personnel/donneurs" className="text-[#E30613] font-semibold hover:underline">Retour</Link>
-    </div>
-  );
+  if (!data?.donor) return <div className="text-center py-12 text-gray-500">Donneur non trouv&eacute;</div>;
 
-  const donationColumns = [
-    { key: "date", label: "Date", render: (d: DonorDetail["donations"][0]) => formatDate(d.date) },
-    { key: "quantity", label: "Quantite", render: (d: DonorDetail["donations"][0]) => `${d.quantity} ml` },
-    { key: "hemoglobin", label: "Hemoglobine", render: (d: DonorDetail["donations"][0]) => d.hemoglobin ? `${d.hemoglobin} g/dL` : "-" },
-    { key: "bloodPressure", label: "Tension", render: (d: DonorDetail["donations"][0]) => d.bloodPressure || "-" },
-    { key: "temperature", label: "Temp.", render: (d: DonorDetail["donations"][0]) => d.temperature ? `${d.temperature}°C` : "-" },
-    { key: "status", label: "Statut", render: (d: DonorDetail["donations"][0]) => <StatusBadge status={d.status} /> },
-  ];
+  const { donor, stats, eligibility } = data;
+  const today = formatDateTime(new Date().toISOString());
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Back + Print */}
-      <div className="flex items-center justify-between">
-        <Link href="/personnel/donneurs" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#E30613] transition-colors">
-          <ArrowLeft size={18} /> Retour aux donneurs
+    <div className="space-y-4">
+      <div className="flex items-center justify-between print:hidden">
+        <Link href="/personnel/donneurs" className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
+          <ArrowLeft size={16} /> Retour &agrave; la liste
         </Link>
-        <button onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors">
-          <Printer size={16} /> Imprimer
+        <button onClick={() => window.print()} className="btn-secondary flex items-center gap-2 px-4 py-2.5 text-sm">
+          <Printer size={16} /> Imprimer la fiche
         </button>
       </div>
 
-      {/* Profile header */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row items-start gap-6">
-          {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#E30613] to-[#003DA5] flex items-center justify-center text-white text-3xl font-bold shadow-lg flex-shrink-0">
-            {donor.user.name.charAt(0).toUpperCase()}
-          </div>
+      {/* FICHE OFFICIELLE - même structure que la fiche donneur */}
+      <div className="bg-white max-w-[800px] mx-auto border-2 border-black print:border print:shadow-none" style={{ fontFamily: "system-ui, Arial, sans-serif" }}>
 
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900">{donor.user.name}</h1>
-            <div className="flex items-center gap-3 mt-2 flex-wrap">
-              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold">
-                {getBloodGroupLabel(donor.bloodGroup, donor.rhFactor)}
-              </span>
-              <span className="text-sm text-gray-500 font-mono">{donor.matricule}</span>
-              <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-bold",
-                eligibility?.isEligible ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"
-              )}>
-                {eligibility?.isEligible ? "Eligible" : `Eligible dans ${eligibility?.daysUntilEligible}j`}
-              </span>
-            </div>
-          </div>
-
-          {/* QR Code */}
-          <div className="flex-shrink-0 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-            <QRCodeSVG value={`VITALINK-DONOR:${donor.matricule}`} size={100} level="M" />
-            <p className="text-[10px] text-gray-400 text-center mt-1">{donor.matricule}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Info grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { icon: <Mail size={16} />, label: "Email", value: donor.user.email },
-          { icon: <Phone size={16} />, label: "Telephone", value: donor.user.phone || "Non renseigne" },
-          { icon: <MapPin size={16} />, label: "Adresse", value: donor.address },
-          { icon: <CreditCard size={16} />, label: "N. Identite", value: donor.nationalId },
-          { icon: <User size={16} />, label: "Genre", value: donor.gender === "M" ? "Masculin" : "Feminin" },
-          { icon: <Calendar size={16} />, label: "Date de naissance", value: formatDate(donor.dateOfBirth) },
-          { icon: <Activity size={16} />, label: "Poids", value: donor.weight ? `${donor.weight} kg` : "Non renseigne" },
-          { icon: <Shield size={16} />, label: "Centre", value: donor.center?.name || "Non affecte" },
-          { icon: <Clock size={16} />, label: "Inscrit le", value: formatDate(donor.user.createdAt) },
-        ].map((item, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 flex items-start gap-3">
-            <span className="text-gray-400 mt-0.5">{item.icon}</span>
+        <div className="border-b-2 border-black p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <VitaLinkIcon size={40} />
             <div>
-              <p className="text-xs text-gray-400 font-medium">{item.label}</p>
-              <p className="text-sm font-semibold text-gray-900 mt-0.5">{item.value}</p>
+              <div className="flex items-baseline"><span className="font-extrabold text-xl text-[#E30613]">Vita</span><span className="font-extrabold text-xl text-[#003DA5]">Link</span></div>
+              <p className="text-[8px] text-gray-500">Plateforme Nationale de Transfusion Sanguine</p>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Stats cards */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Total dons", value: stats.totalDonations, icon: <Droplets size={20} />, color: "text-[#E30613]", bg: "bg-red-50" },
-            { label: "Quantite totale", value: `${stats.totalQuantity} ml`, icon: <Activity size={20} />, color: "text-[#003DA5]", bg: "bg-blue-50" },
-            { label: "Reponses", value: `${stats.acceptedResponses}/${stats.totalResponses}`, icon: <Heart size={20} />, color: "text-green-600", bg: "bg-green-50" },
-            { label: "Rendez-vous", value: stats.totalAppointments, icon: <Calendar size={20} />, color: "text-purple-600", bg: "bg-purple-50" },
-          ].map((s, i) => (
-            <div key={i} className={cn("rounded-2xl border border-gray-100 p-4 shadow-sm", s.bg)}>
-              <div className={cn("mb-2", s.color)}>{s.icon}</div>
-              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Donation history */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Droplets size={20} className="text-[#E30613]" /> Historique des Dons
-          </h2>
-        </div>
-        <div className="p-5">
-          <DataTable columns={donationColumns} data={donor.donations} emptyMessage="Aucun don enregistre" />
-        </div>
-      </div>
-
-      {/* Appointments */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Calendar size={20} className="text-[#003DA5]" /> Rendez-vous
-          </h2>
-        </div>
-        <div className="p-5">
-          {donor.appointments.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Aucun rendez-vous</p>
-          ) : (
-            <div className="space-y-3">
-              {donor.appointments.map(a => (
-                <div key={a.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{formatDateTime(a.date)}</p>
-                    {a.notes && <p className="text-xs text-gray-500 mt-0.5">{a.notes}</p>}
-                  </div>
-                  <StatusBadge status={a.status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Urgency responses */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Heart size={20} className="text-green-600" /> Reponses aux Urgences
-          </h2>
-        </div>
-        <div className="p-5">
-          {donor.donorResponses.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Aucune reponse</p>
-          ) : (
-            <div className="space-y-3">
-              {donor.donorResponses.map(r => (
-                <div key={r.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    {r.status === "ACCEPTED" ? <CheckCircle size={18} className="text-green-600" /> : <XCircle size={18} className="text-red-500" />}
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{r.bloodRequest.hospital.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {getBloodGroupLabel(r.bloodRequest.bloodGroup, r.bloodRequest.rhFactor)} - {r.bloodRequest.urgency} - {formatDate(r.createdAt)}
-                      </p>
-                      {r.message && <p className="text-xs text-gray-400 mt-0.5">{r.message}</p>}
-                    </div>
-                  </div>
-                  <StatusBadge status={r.status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Medical notes */}
-      {donor.medicalNotes && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <FileText size={20} className="text-orange-500" /> Notes Medicales
-            </h2>
-          </div>
-          <div className="p-5">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{donor.medicalNotes}</p>
+          <div className="text-right text-[9px] text-gray-500">
+            {donor.center && (<><p className="font-bold text-gray-700">{donor.center.name}</p><p>{donor.center.province}, Tchad</p>{donor.center.phone && <p>T&eacute;l: {donor.center.phone}</p>}</>)}
           </div>
         </div>
-      )}
+
+        <div className="bg-[#003DA5] text-white text-center py-2.5 font-bold text-lg tracking-wide">FICHE DONNEUR DE SANG</div>
+
+        <div className="border-b-2 border-black px-4 py-2 flex items-center justify-between bg-gray-50">
+          <span className="text-xs text-gray-500">R&eacute;f :</span>
+          <span className="font-mono font-bold text-[#003DA5] text-lg">{donor.matricule}</span>
+          <span className="text-xs text-gray-500">Inscrit le : {formatDate(donor.createdAt)}</span>
+        </div>
+
+        {/* SECTION 1 */}
+        <div className="border-b-2 border-black">
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 1 &mdash; Identification</div>
+          <div className="p-4 flex gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-[100px] h-[120px] border-2 border-black flex items-center justify-center bg-gray-50">
+                <div className="text-center"><p className="text-3xl font-extrabold text-gray-300">{donor.user.name.charAt(0)}</p><p className="text-[7px] text-gray-400 mt-1">PHOTO 4x4</p></div>
+              </div>
+              <div className="text-center mt-1">
+                <span className="inline-block px-3 py-1 bg-[#E30613] text-white text-xl font-extrabold rounded">{getBloodGroupLabel(donor.bloodGroup, donor.rhFactor)}</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <table className="w-full text-sm border-collapse">
+                <tbody>
+                  <tr className="border-b border-gray-200"><td className="py-1.5 text-gray-500 text-xs font-bold w-[120px]">NOM :</td><td className="py-1.5 font-semibold">{donor.user.name.split(" ").slice(-1)[0].toUpperCase()}</td><td className="py-1.5 text-gray-500 text-xs font-bold w-[100px]">PR&Eacute;NOM :</td><td className="py-1.5 font-semibold">{donor.user.name.split(" ").slice(0, -1).join(" ")}</td></tr>
+                  <tr className="border-b border-gray-200"><td className="py-1.5 text-gray-500 text-xs font-bold">N&deg; ID :</td><td className="py-1.5 font-semibold">{donor.nationalId}</td><td className="py-1.5 text-gray-500 text-xs font-bold">GENRE :</td><td className="py-1.5 font-semibold">{donor.gender === "M" ? "Masculin" : "Féminin"}</td></tr>
+                  <tr className="border-b border-gray-200"><td className="py-1.5 text-gray-500 text-xs font-bold">N&Eacute;(E) LE :</td><td className="py-1.5 font-semibold">{formatDate(donor.dateOfBirth)}</td><td className="py-1.5 text-gray-500 text-xs font-bold">POIDS :</td><td className="py-1.5 font-semibold">{donor.weight ? `${donor.weight} kg` : "-"}</td></tr>
+                  <tr className="border-b border-gray-200"><td className="py-1.5 text-gray-500 text-xs font-bold">ADRESSE :</td><td colSpan={3} className="py-1.5 font-semibold">{donor.address}</td></tr>
+                  <tr><td className="py-1.5 text-gray-500 text-xs font-bold">T&Eacute;L :</td><td className="py-1.5 font-semibold">{donor.user.phone || "-"}</td><td className="py-1.5 text-gray-500 text-xs font-bold">EMAIL :</td><td className="py-1.5 font-semibold text-xs">{donor.user.email}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2 */}
+        <div className="border-b-2 border-black">
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 2 &mdash; R&eacute;sum&eacute;</div>
+          <div className="p-4">
+            <table className="w-full text-sm border-collapse border border-gray-300">
+              <thead><tr className="bg-gray-100 text-xs font-bold text-gray-600"><th className="border border-gray-300 px-3 py-2 text-left">Total Dons</th><th className="border border-gray-300 px-3 py-2 text-left">Qt&eacute; Totale</th><th className="border border-gray-300 px-3 py-2 text-left">Dernier Don</th><th className="border border-gray-300 px-3 py-2 text-left">&Eacute;ligibilit&eacute;</th></tr></thead>
+              <tbody><tr>
+                <td className="border border-gray-300 px-3 py-2 font-bold text-[#E30613]">{stats.totalDonations}</td>
+                <td className="border border-gray-300 px-3 py-2 font-bold">{stats.totalQuantity} ml</td>
+                <td className="border border-gray-300 px-3 py-2">{donor.lastDonation ? formatDate(donor.lastDonation) : "Aucun"}</td>
+                <td className="border border-gray-300 px-3 py-2"><span className={`px-2 py-0.5 rounded text-xs font-bold ${eligibility.isEligible ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>{eligibility.isEligible ? "ÉLIGIBLE" : `${eligibility.daysUntilEligible}j`}</span></td>
+              </tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECTION 3 */}
+        <div className="border-b-2 border-black">
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 3 &mdash; Historique des Dons ({donor.donations.length})</div>
+          <div className="p-4">
+            {donor.donations.length === 0 ? <p className="text-sm text-gray-400 text-center py-4">Aucun don</p> : (
+              <table className="w-full text-xs border-collapse border border-gray-300">
+                <thead><tr className="bg-gray-100 font-bold text-gray-600">
+                  <th className="border border-gray-300 px-2 py-1.5 text-left">N&deg;</th><th className="border border-gray-300 px-2 py-1.5 text-left">Date</th><th className="border border-gray-300 px-2 py-1.5 text-left">Qt&eacute;</th><th className="border border-gray-300 px-2 py-1.5 text-left">Hb</th><th className="border border-gray-300 px-2 py-1.5 text-left">TA</th><th className="border border-gray-300 px-2 py-1.5 text-left">T&deg;</th><th className="border border-gray-300 px-2 py-1.5 text-left">Par</th><th className="border border-gray-300 px-2 py-1.5 text-left">Statut</th>
+                </tr></thead>
+                <tbody>{donor.donations.map((d: any, i: number) => (
+                  <tr key={d.id} className={i % 2 === 0 ? "" : "bg-gray-50"}>
+                    <td className="border border-gray-300 px-2 py-1.5 font-bold">{i + 1}</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{formatDate(d.date)}</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{d.quantity} ml</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{d.hemoglobin ? Number(d.hemoglobin).toFixed(1) : "-"}</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{d.bloodPressure || "-"}</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{d.temperature ? Number(d.temperature).toFixed(1) : "-"}</td>
+                    <td className="border border-gray-300 px-2 py-1.5">{d.collectedBy || "-"}</td>
+                    <td className="border border-gray-300 px-2 py-1.5 font-semibold">{d.status}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* SECTION 4 */}
+        <div className="border-b-2 border-black">
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 4 &mdash; Notes M&eacute;dicales</div>
+          <div className="p-4"><div className="border border-gray-300 rounded p-3 min-h-[60px] text-sm text-gray-600">{donor.medicalNotes || "Aucune note."}</div></div>
+        </div>
+
+        {/* SIGNATURE */}
+        <div className="p-6">
+          <div className="grid grid-cols-2 gap-8">
+            <div>
+              <p className="text-xs text-gray-500 font-bold mb-1">Fait &agrave; : ____________________</p>
+              <p className="text-xs text-gray-500 font-bold mb-6">Le : {today}</p>
+              <div className="border-b border-black w-48 mb-1" />
+              <p className="text-xs text-gray-600 font-bold">Signature de l&apos;agent</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 font-bold mb-7">Visa du responsable :</p>
+              <div className="border-b border-black w-48 ml-auto mb-1" />
+              <p className="text-xs text-gray-600 font-bold">Signature et cachet</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t-2 border-black px-4 py-2 flex items-center justify-between bg-gray-50">
+          <div className="flex items-center gap-2"><VitaLinkIcon size={16} /><span className="text-[9px] text-gray-400"><span className="font-bold text-[#E30613]">Vita</span><span className="font-bold text-[#003DA5]">Link</span></span></div>
+          <span className="text-[8px] text-gray-400">D&eacute;velopp&eacute; par <a href="https://jidicom.lovable.app" className="font-bold">JIDICOM</a> &middot; {today}</span>
+        </div>
+      </div>
+
+      <style jsx>{`@media print { @page { margin: 10mm; size: A4; } }`}</style>
     </div>
   );
 }
