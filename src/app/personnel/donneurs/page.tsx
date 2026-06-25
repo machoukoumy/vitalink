@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate, BLOOD_GROUPS, getBloodGroupLabel } from "@/lib/utils";
@@ -41,7 +42,7 @@ export default function PersonnelDonneursPage() {
 
   const columns = [
     { key: "name", label: "Nom", render: (d: DonorRecord) => (
-      <div><p className="font-medium">{d.user.name}</p><p className="text-xs text-gray-500">{d.user.phone || d.user.email}</p></div>
+      <div><Link href={`/personnel/donneurs/${d.id}`} className="font-medium hover:text-[#E30613] hover:underline transition-colors">{d.user.name}</Link><p className="text-xs text-gray-500">{d.user.phone || d.user.email}</p></div>
     )},
     { key: "bloodGroup", label: "Groupe", render: (d: DonorRecord) => (
       <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">

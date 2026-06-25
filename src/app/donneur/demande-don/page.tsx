@@ -1,15 +1,54 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, AlertTriangle } from "lucide-react";
-import { BLOOD_GROUPS, RH_FACTORS, PROVINCES, cn } from "@/lib/utils";
+import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import StatusBadge from "@/components/StatusBadge";
+import { BLOOD_GROUPS, RH_FACTORS, PROVINCES, cn, formatDate, getBloodGroupLabel } from "@/lib/utils";
 
-export default function DemandeDonPage() {
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+interface DonorRequestRecord {
+  id: string;
+  bloodGroup: string;
+  rhFactor: string;
+  quantity: number;
+  urgency: string;
+  status: string;
+  reason: string | null;
+  city: string;
+  createdAt: string;
+}
+
+const URGENCY_COLORS: Record<string, string> = {
+  CRITICAL: "bg-[#E30613] text-white",
+  URGENT: "bg-orange-500 text-white",
+  NORMAL: "bg-[#003DA5] text-white",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+
+export default function MesDemandesPage() {
   const [form, setForm] = useState({ bloodGroup: "", rhFactor: "", quantity: "450", urgency: "NORMAL", reason: "", city: "", nearestCenter: "", contactPhone: "", notes: "", isPublic: true });
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [requests, setRequests] = useState<DonorRequestRecord[]>([]);
+  const [listLoading, setListLoading] = useState(true);
+
+  /* Fetch existing requests */
+  const fetchRequests = () => {
+    fetch("/api/donor-requests")
+      .then(r => r.json())
+      .then(d => setRequests(d.requests || []))
+      .finally(() => setListLoading(false));
+  };
+
   useEffect(() => {
+    fetchRequests();
     fetch("/api/auth/me").then(r => r.json()).then(d => {
       if (d.user?.donor) {
         setForm(f => ({ ...f, bloodGroup: d.user.donor.bloodGroup, rhFactor: d.user.donor.rhFactor, contactPhone: d.user.phone || "" }));
@@ -19,10 +58,21 @@ export default function DemandeDonPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setFormLoading(true);
     const res = await fetch("/api/donor-requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    if (res.ok) { setSuccess(true); setForm(f => ({ ...f, quantity: "450", urgency: "NORMAL", reason: "", city: "", nearestCenter: "", notes: "" })); }
-    setLoading(false);
+    if (res.ok) {
+      setSuccess(true);
+      setForm(f => ({ ...f, quantity: "450", urgency: "NORMAL", reason: "", city: "", nearestCenter: "", notes: "" }));
+      setListLoading(true);
+      fetchRequests();
+      setTimeout(() => setSuccess(false), 4000);
+    }
+    setFormLoading(false);
+  };
+
+  const handleCancel = async (id: string) => {
+    await fetch(`/api/donor-requests/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "CANCELLED" }) });
+    fetchRequests();
   };
 
   const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm";
@@ -30,10 +80,52 @@ export default function DemandeDonPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Demander du sang</h1>
-        <p className="text-gray-500 mt-1">Publiez votre besoin pour que la communaut&eacute; puisse vous aider</p>
+        <h1 className="text-2xl font-bold text-gray-900">Mes Demandes de Sang</h1>
+        <p className="text-gray-500 mt-1">Consultez vos demandes et publiez un nouveau besoin</p>
       </div>
 
+      {/* ---- Existing requests list ---- */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Mes demandes ({requests.length})</h2>
+        </div>
+        <div className="p-5">
+          {listLoading ? (
+            <p className="text-center text-gray-400 py-6">Chargement...</p>
+          ) : requests.length === 0 ? (
+            <p className="text-center text-gray-400 py-6">Aucune demande publi&eacute;e</p>
+          ) : (
+            <div className="space-y-3">
+              {requests.map(r => (
+                <div key={r.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="px-2 py-1 bg-[#E30613]/10 text-[#E30613] rounded-lg text-sm font-bold">
+                      {getBloodGroupLabel(r.bloodGroup, r.rhFactor)}
+                    </span>
+                    <span className="text-sm text-gray-700 font-medium">{r.quantity} ml</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold", URGENCY_COLORS[r.urgency])}>
+                      {r.urgency}
+                    </span>
+                    <span className="text-xs text-gray-400">{r.city}</span>
+                    {r.reason && <span className="text-xs text-gray-500 line-clamp-1">{r.reason}</span>}
+                    <span className="text-xs text-gray-400">{formatDate(r.createdAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={r.status} />
+                    {r.status === "PENDING" && (
+                      <button onClick={() => handleCancel(r.id)} className="text-xs text-[#E30613] font-semibold hover:underline flex items-center gap-1">
+                        <XCircle size={14} /> Annuler
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ---- Creation form ---- */}
       {success && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
           <CheckCircle className="text-emerald-600 flex-shrink-0" size={22} />
@@ -42,6 +134,7 @@ export default function DemandeDonPage() {
       )}
 
       <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-7 shadow-sm">
+        <h2 className="text-lg font-bold text-gray-900 mb-5">Nouvelle demande</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
@@ -113,8 +206,8 @@ export default function DemandeDonPage() {
             </div>
           </label>
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 text-sm disabled:opacity-50">
-            {loading ? "Publication..." : "Publier ma demande"}
+          <button type="submit" disabled={formLoading} className="btn-primary w-full py-3.5 text-sm disabled:opacity-50">
+            {formLoading ? "Publication..." : "Publier ma demande"}
           </button>
         </form>
       </div>

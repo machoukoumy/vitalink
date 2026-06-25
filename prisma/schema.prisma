@@ -16,6 +16,8 @@ model Center {
   address   String
   phone     String?
   email     String?
+  latitude  Float?
+  longitude Float?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -35,6 +37,8 @@ model Hospital {
   address   String
   phone     String?
   email     String?
+  latitude  Float?
+  longitude Float?
   type      String   @default("PUBLIC")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -78,6 +82,8 @@ model Donor {
   address       String
   nationalId    String   @unique
   weight        Float?
+  latitude      Float?
+  longitude     Float?
   lastDonation  DateTime?
   isEligible    Boolean  @default(true)
   medicalNotes  String?

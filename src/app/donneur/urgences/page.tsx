@@ -7,11 +7,8 @@ import {
   MapPin,
   HandHeart,
   Filter,
-  X,
-  Calendar as CalendarIcon,
-  MessageSquare,
+  CheckCircle,
 } from "lucide-react";
-import Modal from "@/components/Modal";
 import StatusBadge from "@/components/StatusBadge";
 import { formatDate, getBloodGroupLabel, cn } from "@/lib/utils";
 
@@ -56,13 +53,10 @@ export default function DonneurUrgencesPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("matching");
   const [loading, setLoading] = useState(true);
 
-  /* Modal state */
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalRequest, setModalRequest] = useState<UrgentRequest | null>(null);
-  const [modalAction, setModalAction] = useState<"ACCEPTED" | "REFUSED">("ACCEPTED");
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalDate, setModalDate] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  /* Track which request is currently being submitted */
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  /* Flash confirmation */
+  const [confirmedId, setConfirmedId] = useState<string | null>(null);
 
   /* Fetch data */
   useEffect(() => {
@@ -77,59 +71,32 @@ export default function DonneurUrgencesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  /* Open modal for a response */
-  const openResponseModal = useCallback(
-    (req: UrgentRequest, action: "ACCEPTED" | "REFUSED") => {
-      setModalRequest(req);
-      setModalAction(action);
-      setModalMessage("");
-      setModalDate("");
-      setModalOpen(true);
-    },
-    []
-  );
-
-  /* Submit response */
-  const submitResponse = useCallback(async () => {
-    if (!modalRequest) return;
-    setSubmitting(true);
+  /* Direct response - no modal */
+  const submitResponse = useCallback(async (req: UrgentRequest, status: "ACCEPTED" | "REFUSED") => {
+    setSubmittingId(req.id);
     try {
-      const body: Record<string, string> = {
-        bloodRequestId: modalRequest.id,
-        status: modalAction,
-      };
-      if (modalMessage.trim()) body.message = modalMessage.trim();
-      if (modalDate) body.availableDate = modalDate;
-
       const res = await fetch("/api/donor-responses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ bloodRequestId: req.id, status }),
       });
 
       if (res.ok) {
-        /* Update matching requests locally */
-        setMatchingRequests((prev) =>
+        const update = (prev: UrgentRequest[]) =>
           prev.map((r) =>
-            r.id === modalRequest.id
-              ? { ...r, alreadyResponded: true, myResponse: modalAction }
-              : r
-          )
-        );
-        /* Also update allRequests if present */
-        setAllRequests((prev) =>
-          prev.map((r) =>
-            r.id === modalRequest.id
-              ? { ...r, alreadyResponded: true, myResponse: modalAction }
-              : r
-          )
-        );
-        setModalOpen(false);
+            r.id === req.id ? { ...r, alreadyResponded: true, myResponse: status } : r
+          );
+        setMatchingRequests(update);
+        setAllRequests(update);
+
+        /* Flash confirmation for 2 seconds */
+        setConfirmedId(req.id);
+        setTimeout(() => setConfirmedId(null), 2000);
       }
     } finally {
-      setSubmitting(false);
+      setSubmittingId(null);
     }
-  }, [modalRequest, modalAction, modalMessage, modalDate]);
+  }, []);
 
   /* Which list to show */
   const displayList = activeTab === "matching" ? matchingRequests : allRequests;
@@ -151,7 +118,7 @@ export default function DonneurUrgencesPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Appels Urgents aux Dons</h1>
-        <p className="text-gray-500 mt-1">Les hôpitaux ont besoin de votre aide</p>
+        <p className="text-gray-500 mt-1">Les h&ocirc;pitaux ont besoin de votre aide</p>
       </div>
 
       {/* Filter tabs */}
@@ -206,6 +173,8 @@ export default function DonneurUrgencesPage() {
           {displayList.map((req) => {
             const uc = urgencyColors[req.urgency] || urgencyColors.NORMAL;
             const phone = req.contactPhone || req.hospital.phone;
+            const isSubmitting = submittingId === req.id;
+            const justConfirmed = confirmedId === req.id;
 
             return (
               <div
@@ -216,6 +185,13 @@ export default function DonneurUrgencesPage() {
                   uc.bg
                 )}
               >
+                {/* Flash confirmation */}
+                {justConfirmed && (
+                  <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-xl text-sm font-semibold animate-pulse">
+                    <CheckCircle size={16} /> R&eacute;ponse enregistr&eacute;e !
+                  </div>
+                )}
+
                 <div className="flex items-start justify-between flex-wrap gap-3">
                   <div className="flex-1 min-w-0">
                     {/* Badges row */}
@@ -260,24 +236,26 @@ export default function DonneurUrgencesPage() {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
+                  {/* Action buttons - direct, no modal */}
                   <div className="flex items-center gap-2 flex-shrink-0 mt-1">
                     {req.alreadyResponded ? (
                       <StatusBadge status={req.myResponse || "PENDING"} />
                     ) : (
                       <>
                         <button
-                          onClick={() => openResponseModal(req, "ACCEPTED")}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors touch-active"
+                          onClick={() => submitResponse(req, "ACCEPTED")}
+                          disabled={isSubmitting}
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors touch-active disabled:opacity-50"
                         >
                           <HandHeart size={16} />
-                          Je peux donner
+                          {isSubmitting ? "..." : "Je peux donner"}
                         </button>
                         <button
-                          onClick={() => openResponseModal(req, "REFUSED")}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors touch-active"
+                          onClick={() => submitResponse(req, "REFUSED")}
+                          disabled={isSubmitting}
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors touch-active disabled:opacity-50"
                         >
-                          Pas disponible
+                          {isSubmitting ? "..." : "Pas disponible"}
                         </button>
                       </>
                     )}
@@ -288,103 +266,6 @@ export default function DonneurUrgencesPage() {
           })}
         </div>
       )}
-
-      {/* ---- Response Modal ---- */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={
-          modalAction === "ACCEPTED"
-            ? "Confirmer votre disponibilité"
-            : "Indiquer votre indisponibilité"
-        }
-      >
-        {modalRequest && (
-          <div className="space-y-5">
-            {/* Request summary */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">
-                  {getBloodGroupLabel(modalRequest.bloodGroup, modalRequest.rhFactor)}
-                </span>
-                <span className="text-sm text-gray-600">{modalRequest.quantity} ml</span>
-              </div>
-              <p className="font-semibold text-gray-900">{modalRequest.hospital.name}</p>
-              <p className="text-sm text-gray-500">{modalRequest.hospital.province}</p>
-            </div>
-
-            {/* Available date (only for ACCEPTED) */}
-            {modalAction === "ACCEPTED" && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <CalendarIcon size={14} className="inline mr-1.5" />
-                  Date de disponibilité
-                </label>
-                <input
-                  type="date"
-                  value={modalDate}
-                  onChange={(e) => setModalDate(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#E30613]/20 focus:border-[#E30613] outline-none transition-all"
-                />
-              </div>
-            )}
-
-            {/* Message */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                <MessageSquare size={14} className="inline mr-1.5" />
-                Message (optionnel)
-              </label>
-              <textarea
-                value={modalMessage}
-                onChange={(e) => setModalMessage(e.target.value)}
-                rows={3}
-                placeholder={
-                  modalAction === "ACCEPTED"
-                    ? "Ex: Je suis disponible demain matin..."
-                    : "Ex: Je suis en déplacement cette semaine..."
-                }
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#E30613]/20 focus:border-[#E30613] outline-none transition-all resize-none"
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                onClick={submitResponse}
-                disabled={submitting}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors touch-active disabled:opacity-50",
-                  modalAction === "ACCEPTED"
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-gray-600 hover:bg-gray-700 text-white"
-                )}
-              >
-                {submitting ? (
-                  <span className="animate-pulse">Envoi...</span>
-                ) : modalAction === "ACCEPTED" ? (
-                  <>
-                    <HandHeart size={16} />
-                    Confirmer
-                  </>
-                ) : (
-                  <>
-                    <X size={16} />
-                    Confirmer l&apos;indisponibilité
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => setModalOpen(false)}
-                disabled={submitting}
-                className="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors touch-active"
-              >
-                Annuler
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
