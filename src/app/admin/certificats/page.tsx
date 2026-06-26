@@ -134,35 +134,37 @@ export default function AdminCertificatsPage() {
       </Modal>
 
       {/* View Certificate Modal */}
-      <Modal isOpen={!!viewCert} onClose={() => setViewCert(null)} title="Certificat de Don">
+      <Modal isOpen={!!viewCert} onClose={() => setViewCert(null)} title="Aperçu du Certificat">
         {viewCert && (
           <div>
-            <div className="border-2 border-black p-5" style={{ fontFamily: "system-ui, Arial, sans-serif" }}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
+            <div className="border-[3px] border-gray-800 p-2">
+              <div className="border border-gray-400 p-6 text-center" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+                <div className="flex items-center justify-center gap-2 mb-1">
                   <VitaLinkIcon size={28} />
-                  <div><span className="font-extrabold text-[#E30613]">Vita</span><span className="font-extrabold text-[#003DA5]">Link</span></div>
+                  <span className="font-extrabold text-lg text-[#E30613]" style={{ fontFamily: "system-ui" }}>Vita</span>
+                  <span className="font-extrabold text-lg text-[#003DA5]" style={{ fontFamily: "system-ui" }}>Link</span>
                 </div>
-                <p className="text-xs text-gray-400">CERTIFICAT DE DON</p>
-              </div>
-              <div className="text-center border-y border-gray-300 py-3 mb-4">
-                <h2 className="text-lg font-bold">CERTIFICAT DE DON DE SANG</h2>
-              </div>
-              <p className="text-sm mb-3">
-                Ce certificat atteste que <strong>{viewCert.donorName}</strong> (Matricule: <strong>{viewCert.donorMatricule}</strong>),
-                groupe sanguin <strong>{getBloodGroupLabel(viewCert.bloodGroup, viewCert.rhFactor)}</strong>,
-                a effectu&eacute; un don de sang{viewCert.quantity ? ` de ${viewCert.quantity} ml` : ""}
-                {viewCert.donationDate ? ` le ${formatDate(viewCert.donationDate)}` : ""}
-                {viewCert.centerName ? ` au ${viewCert.centerName}` : ""}.
-              </p>
-              {viewCert.status === "SIGNED" && (
-                <div className="mt-4 pt-3 border-t border-gray-200">
-                  <p className="text-xs text-gray-500">Sign&eacute; par: <strong>{viewCert.signedByName}</strong></p>
-                  <p className="text-xs text-gray-500">Date: <strong>{viewCert.signedAt ? formatDateTime(viewCert.signedAt) : ""}</strong></p>
-                  <div className="mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-bold inline-block">CERTIFI&Eacute; ET SIGN&Eacute;</div>
+                <p className="text-[8px] text-gray-400 tracking-[0.2em] uppercase mb-4">Plateforme Nationale de Transfusion Sanguine</p>
+                <h2 className="text-2xl font-extrabold text-gray-900 mb-0.5" style={{ fontFamily: "system-ui" }}>CERTIFICAT</h2>
+                <p className="text-sm tracking-[0.2em] uppercase text-gray-500 mb-4">de don de sang</p>
+                <p className="text-[10px] text-gray-400 tracking-wider uppercase mb-2">Ce certificat est d&eacute;cern&eacute; &agrave;</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">{viewCert.donorName}</h3>
+                <p className="text-xs text-gray-600 max-w-sm mx-auto mb-4">
+                  Groupe <strong className="text-[#E30613]">{getBloodGroupLabel(viewCert.bloodGroup, viewCert.rhFactor)}</strong>
+                  {viewCert.quantity ? ` · ${viewCert.quantity} ml` : ""}
+                  {viewCert.donationDate ? ` · ${formatDate(viewCert.donationDate)}` : ""}
+                </p>
+                <div className="flex items-end justify-between px-4 mt-6">
+                  <div className="text-center w-32">
+                    <p className="text-xs text-gray-600 mb-0.5">{viewCert.signedAt ? formatDate(viewCert.signedAt) : "___________"}</p>
+                    <div className="border-t border-gray-400 pt-0.5"><p className="text-[9px] text-gray-400">Date</p></div>
+                  </div>
+                  <div className="text-center w-32">
+                    <p className="text-xs font-bold text-gray-900 mb-0.5">{viewCert.signedByName || "___________"}</p>
+                    <div className="border-t border-gray-400 pt-0.5"><p className="text-[9px] text-gray-400">Signature Admin</p></div>
+                  </div>
                 </div>
-              )}
-              <p className="text-[8px] text-gray-300 mt-4 text-center">VitaLink - D&eacute;velopp&eacute; par JIDICOM</p>
+              </div>
             </div>
             {viewCert.status === "SIGNED" && (
               <button onClick={() => window.print()} className="btn-secondary w-full py-3 text-sm mt-3 flex items-center justify-center gap-2">

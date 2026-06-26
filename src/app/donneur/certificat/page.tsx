@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, CheckCircle, Printer } from "lucide-react";
+import { FileText, CheckCircle, Printer, X } from "lucide-react";
 import { VitaLinkIcon } from "@/components/VitaLinkLogo";
-import { formatDate, formatDateTime, getBloodGroupLabel } from "@/lib/utils";
+import { formatDate, getBloodGroupLabel } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -22,14 +22,14 @@ export default function CertificatDonneurPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Mes Certificats</h1>
-        <p className="text-gray-500 mt-1">Certificats de don sign&eacute;s par l&apos;administration</p>
+        <p className="text-gray-500 mt-1">Certificats sign&eacute;s par l&apos;administration</p>
       </div>
 
       {certs.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
           <FileText size={40} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-400 font-medium">Aucun certificat disponible</p>
-          <p className="text-xs text-gray-300 mt-1">Les certificats appara&icirc;tront ici apr&egrave;s signature par l&apos;admin</p>
+          <p className="text-xs text-gray-300 mt-1">Vos certificats appara&icirc;tront ici apr&egrave;s signature</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -47,7 +47,6 @@ export default function CertificatDonneurPage() {
                       {c.donationDate && <span>{formatDate(c.donationDate)}</span>}
                       {c.quantity && <span>{c.quantity} ml</span>}
                     </div>
-                    <p className="text-xs text-emerald-600 mt-0.5">Sign&eacute; par {c.signedByName}</p>
                   </div>
                 </div>
                 <button onClick={() => setViewCert(c)} className="btn-secondary px-3 py-2 text-xs flex items-center gap-1">
@@ -59,35 +58,103 @@ export default function CertificatDonneurPage() {
         </div>
       )}
 
+      {/* ===== CERTIFICAT STYLE DIPLOME ===== */}
       {viewCert && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50" onClick={() => setViewCert(null)}>
-          <div className="bg-white max-w-lg w-full mx-4 rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-2 border-black m-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2"><VitaLinkIcon size={32} /><div><span className="font-extrabold text-lg text-[#E30613]">Vita</span><span className="font-extrabold text-lg text-[#003DA5]">Link</span></div></div>
-                {viewCert.centerName && <p className="text-[9px] text-gray-500">{viewCert.centerName}</p>}
-              </div>
-              <div className="text-center border-y-2 border-black py-3 mb-4">
-                <h2 className="text-xl font-extrabold text-[#003DA5]">CERTIFICAT DE DON DE SANG</h2>
-              </div>
-              <p className="text-sm leading-relaxed mb-4">
-                Ce certificat atteste que <strong>{viewCert.donorName}</strong> (Matricule: <strong className="text-[#003DA5]">{viewCert.donorMatricule}</strong>),
-                groupe sanguin <strong className="text-[#E30613]">{getBloodGroupLabel(viewCert.bloodGroup, viewCert.rhFactor)}</strong>,
-                a effectu&eacute; un don de sang{viewCert.quantity ? ` de ${viewCert.quantity} ml` : ""}
-                {viewCert.donationDate ? ` le ${formatDate(viewCert.donationDate)}` : ""}
-                {viewCert.centerName ? ` au ${viewCert.centerName}` : ""}.
-              </p>
-              <div className="border-t-2 border-black pt-3">
-                <div className="flex items-center justify-between">
-                  <div><p className="text-xs text-gray-500">Sign&eacute; par :</p><p className="text-sm font-bold">{viewCert.signedByName}</p><p className="text-xs text-gray-400">{viewCert.signedAt ? formatDateTime(viewCert.signedAt) : ""}</p></div>
-                  <div className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-extrabold border border-emerald-300">CERTIFI&Eacute; &#10003;</div>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4" onClick={() => setViewCert(null)}>
+          <div className="bg-white max-w-[700px] w-full rounded-lg overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+
+            {/* Le certificat imprimable */}
+            <div className="relative p-3 print:p-0">
+              <div className="border-[3px] border-gray-800 p-2">
+                <div className="border border-gray-400 p-8 md:p-12 text-center" style={{ fontFamily: "Georgia, 'Times New Roman', serif", minHeight: "500px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+
+                  {/* Coins décoratifs */}
+                  <div className="absolute top-5 left-5 w-8 h-8 border-t-2 border-l-2 border-gray-400 rounded-tl-lg" />
+                  <div className="absolute top-5 right-5 w-8 h-8 border-t-2 border-r-2 border-gray-400 rounded-tr-lg" />
+                  <div className="absolute bottom-5 left-5 w-8 h-8 border-b-2 border-l-2 border-gray-400 rounded-bl-lg" />
+                  <div className="absolute bottom-5 right-5 w-8 h-8 border-b-2 border-r-2 border-gray-400 rounded-br-lg" />
+
+                  {/* Header */}
+                  <div>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <VitaLinkIcon size={36} />
+                      <div>
+                        <span className="font-extrabold text-xl text-[#E30613]" style={{ fontFamily: "system-ui, sans-serif" }}>Vita</span>
+                        <span className="font-extrabold text-xl text-[#003DA5]" style={{ fontFamily: "system-ui, sans-serif" }}>Link</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 tracking-[0.2em] uppercase mb-6">Plateforme Nationale de Transfusion Sanguine du Tchad</p>
+
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-1" style={{ fontFamily: "system-ui, sans-serif" }}>
+                      CERTIFICAT
+                    </h1>
+                    <p className="text-lg tracking-[0.3em] uppercase text-gray-500 mb-8">de don de sang</p>
+                  </div>
+
+                  {/* Corps */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    <p className="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Ce certificat est fièrement décerné à</p>
+
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Georgia', serif" }}>
+                      {viewCert.donorName}
+                    </h2>
+
+                    <div className="max-w-md mx-auto mb-6">
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        En reconnaissance de son acte g&eacute;n&eacute;reux de don de sang
+                        <span className="font-bold text-[#E30613]"> {getBloodGroupLabel(viewCert.bloodGroup, viewCert.rhFactor)}</span>
+                        {viewCert.quantity ? ` (${viewCert.quantity} ml)` : ""}
+                        {viewCert.donationDate ? `, effectué le ${formatDate(viewCert.donationDate)}` : ""}
+                        {viewCert.centerName ? ` au ${viewCert.centerName}` : ""}.
+                        Votre don contribue &agrave; sauver des vies.
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-gray-400 mb-2">Matricule: <span className="font-mono font-bold text-[#003DA5]">{viewCert.donorMatricule}</span></p>
+                  </div>
+
+                  {/* Signature */}
+                  <div>
+                    {/* Laurier / séparateur */}
+                    <div className="flex items-center justify-center gap-2 mb-6">
+                      <div className="w-16 h-px bg-gray-300" />
+                      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="text-gray-300">
+                        <circle cx="20" cy="20" r="14" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                        <path d="M14 26C14 26 16 20 20 16C24 20 26 26 26 26" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                        <circle cx="20" cy="14" r="2" fill="currentColor" />
+                      </svg>
+                      <div className="w-16 h-px bg-gray-300" />
+                    </div>
+
+                    <div className="flex items-end justify-between px-4 md:px-8">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-700 mb-1">{viewCert.signedAt ? formatDate(viewCert.signedAt) : "_______________"}</p>
+                        <div className="w-40 border-t border-gray-400 pt-1">
+                          <p className="text-xs text-gray-500">Date</p>
+                        </div>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-gray-900 mb-1">{viewCert.signedByName || "_______________"}</p>
+                        <div className="w-40 border-t border-gray-400 pt-1">
+                          <p className="text-xs text-gray-500">Signature de l&apos;Admin</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
-              <p className="text-[7px] text-gray-300 mt-4 text-center">VitaLink - D&eacute;velopp&eacute; par JIDICOM</p>
             </div>
-            <div className="p-4 flex gap-2">
-              <button onClick={() => window.print()} className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"><Printer size={16} /> Imprimer</button>
-              <button onClick={() => setViewCert(null)} className="flex-1 py-3 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl">Fermer</button>
+
+            {/* Boutons hors certificat */}
+            <div className="p-4 flex gap-2 print:hidden border-t border-gray-100">
+              <button onClick={() => window.print()} className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2">
+                <Printer size={16} /> Imprimer
+              </button>
+              <button onClick={() => setViewCert(null)} className="flex-1 py-3 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl flex items-center justify-center gap-1">
+                <X size={16} /> Fermer
+              </button>
             </div>
           </div>
         </div>
