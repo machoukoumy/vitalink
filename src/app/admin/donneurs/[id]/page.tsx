@@ -63,7 +63,7 @@ export default function AdminDonorDetailPage() {
 
         {/* SECTION 1 */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 1 &mdash; Identification</div>
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Identification</div>
           <div className="p-4 flex gap-4">
             <div className="flex-shrink-0">
               <div className="w-[100px] h-[120px] border-2 border-black flex items-center justify-center bg-gray-50">
@@ -89,7 +89,7 @@ export default function AdminDonorDetailPage() {
 
         {/* SECTION 2 */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 2 &mdash; R&eacute;sum&eacute;</div>
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">R&eacute;sum&eacute;</div>
           <div className="p-4">
             <table className="w-full text-sm border-collapse border border-gray-300">
               <thead><tr className="bg-gray-100 text-xs font-bold text-gray-600"><th className="border border-gray-300 px-3 py-2 text-left">Total Dons</th><th className="border border-gray-300 px-3 py-2 text-left">Qt&eacute; Totale</th><th className="border border-gray-300 px-3 py-2 text-left">Dernier Don</th><th className="border border-gray-300 px-3 py-2 text-left">&Eacute;ligibilit&eacute;</th></tr></thead>
@@ -105,7 +105,7 @@ export default function AdminDonorDetailPage() {
 
         {/* SECTION 3 */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 3 &mdash; Historique des Dons ({donor.donations.length})</div>
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Historique des Dons ({donor.donations.length})</div>
           <div className="p-4">
             {donor.donations.length === 0 ? <p className="text-sm text-gray-400 text-center py-4">Aucun don</p> : (
               <table className="w-full text-xs border-collapse border border-gray-300">
@@ -131,7 +131,7 @@ export default function AdminDonorDetailPage() {
 
         {/* SECTION 4 */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 4 &mdash; Notes M&eacute;dicales</div>
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Notes M&eacute;dicales</div>
           <div className="p-4"><div className="border border-gray-300 rounded p-3 min-h-[60px] text-sm text-gray-600">{donor.medicalNotes || "Aucune note."}</div></div>
         </div>
 

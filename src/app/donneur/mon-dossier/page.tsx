@@ -76,7 +76,7 @@ export default function MonDossierPage() {
 
         {/* SECTION 1 : IDENTITÉ + PHOTO */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 1 &mdash; Identification du Donneur</div>
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Identification du Donneur</div>
           <div className="p-4 flex gap-4">
             {/* Photo 4x4 */}
             <div className="flex-shrink-0">
@@ -137,7 +137,7 @@ export default function MonDossierPage() {
 
         {/* SECTION 2 : RÉSUMÉ */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 2 &mdash; R&eacute;sum&eacute; M&eacute;dical</div>
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">R&eacute;sum&eacute; M&eacute;dical</div>
           <div className="p-4">
             <table className="w-full text-sm border-collapse border border-gray-300">
               <thead>
@@ -168,7 +168,7 @@ export default function MonDossierPage() {
 
         {/* SECTION 3 : HISTORIQUE DES DONS */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Section 3 &mdash; Historique des Dons ({donor.donations.length})</div>
+          <div className="bg-[#E30613] text-white px-4 py-1 text-xs font-bold uppercase">Historique des Dons ({donor.donations.length})</div>
           <div className="p-4">
             {donor.donations.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">Aucun don enregistr&eacute;</p>
@@ -207,7 +207,7 @@ export default function MonDossierPage() {
 
         {/* SECTION 4 : NOTES MÉDICALES */}
         <div className="border-b-2 border-black">
-          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Section 4 &mdash; Notes M&eacute;dicales &amp; Observations</div>
+          <div className="bg-[#003DA5] text-white px-4 py-1 text-xs font-bold uppercase">Notes M&eacute;dicales &amp; Observations</div>
           <div className="p-4">
             <div className="border border-gray-300 rounded p-3 min-h-[60px] text-sm text-gray-600">
               {donor.medicalNotes || "Aucune note médicale enregistrée."}
