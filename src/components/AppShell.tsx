@@ -149,6 +149,45 @@ function isModuleActive(pathname: string, mod: NavModule): boolean {
   return mod.children?.some(c => pathname === c.href || pathname.startsWith(c.href + "/")) || false;
 }
 
+function MobileSheet({ moreOpen, modules, pathname, onClose, onLogout }: {
+  moreOpen: string | false; modules: NavModule[]; pathname: string; onClose: () => void; onLogout: () => void;
+}) {
+  if (!moreOpen) return null;
+  const activeMod = modules.find(m => m.id === moreOpen);
+  if (!activeMod || !activeMod.children || activeMod.children.length === 0) return null;
+
+  return (
+    <div className="lg:hidden fixed inset-0 z-[60]" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 72px)" }}
+        onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2" />
+        <div className="px-4 pb-3">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">{activeMod.label}</p>
+          {activeMod.children.map(sub => {
+            const subActive = pathname === sub.href || pathname.startsWith(sub.href + "/");
+            return (
+              <Link key={sub.href} href={sub.href} onClick={onClose}
+                className={cn("flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors",
+                  subActive ? "bg-[#E30613]/8 text-[#E30613]" : "text-gray-600"
+                )}>
+                {sub.label}
+              </Link>
+            );
+          })}
+          <div className="border-t border-gray-100 mt-2 pt-2">
+            <button onClick={() => { onClose(); onLogout(); }}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-[#E30613] w-full">
+              <LogOut size={20} /> Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AppShell({ role, userName, children }: { role: string; userName: string; children: React.ReactNode }) {
   const pathname = usePathname();
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -291,40 +330,7 @@ export default function AppShell({ role, userName, children }: { role: string; u
       </nav>
 
       {/* ===== MOBILE SUB-MENU SHEET ===== */}
-      {moreOpen && (() => {
-        const activeMod = modules.find(m => m.id === moreOpen) || modules.find(m => m.children && m.children.length > 0);
-        if (!activeMod?.children) return null;
-        return (
-          <div className="lg:hidden fixed inset-0 z-[60]" onClick={() => setMoreOpen(false)}>
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
-              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 72px)" }}
-              onClick={e => e.stopPropagation()}>
-              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-2" />
-              <div className="px-4 pb-3">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">{activeMod.label}</p>
-                {activeMod.children.map(sub => {
-                  const subActive = pathname === sub.href || pathname.startsWith(sub.href + "/");
-                  return (
-                    <Link key={sub.href} href={sub.href} onClick={() => setMoreOpen(false)}
-                      className={cn("flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium transition-colors",
-                        subActive ? "bg-[#E30613]/8 text-[#E30613]" : "text-gray-600"
-                      )}>
-                      {sub.label}
-                    </Link>
-                  );
-                })}
-                <div className="border-t border-gray-100 mt-2 pt-2">
-                  <button onClick={() => { setMoreOpen(false); handleLogout(); }}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] font-medium text-[#E30613] w-full">
-                    <LogOut size={20} /> Déconnexion
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      <MobileSheet moreOpen={moreOpen} modules={modules} pathname={pathname} onClose={() => setMoreOpen(false)} onLogout={handleLogout} />
     </div>
   );
 }
