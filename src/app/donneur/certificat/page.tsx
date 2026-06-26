@@ -1,215 +1,95 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { VitaLinkLogoFull } from "@/components/VitaLinkLogo";
-import { formatDate, cn } from "@/lib/utils";
-import { FileText, Printer, ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, CheckCircle, Printer } from "lucide-react";
+import { VitaLinkIcon } from "@/components/VitaLinkLogo";
+import { formatDate, formatDateTime, getBloodGroupLabel } from "@/lib/utils";
 
-interface Donation {
-  id: string;
-  donationDate: string;
-  quantity: number;
-  status: string;
-  center?: { name: string };
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-interface CertificateData {
-  donorName: string;
-  matricule: string;
-  bloodGroup: string;
-  donationDate: string;
-  quantity: number;
-  centerName: string;
-}
-
-export default function DonorCertificatPage() {
-  const [donations, setDonations] = useState<Donation[]>([]);
+export default function CertificatDonneurPage() {
+  const [certs, setCerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [certificate, setCertificate] = useState<CertificateData | null>(null);
-  const [certLoading, setCertLoading] = useState(false);
-
-  const fetchDonations = useCallback(async () => {
-    try {
-      const res = await fetch("/api/donations");
-      if (res.ok) {
-        const data = await res.json();
-        const all: Donation[] = Array.isArray(data) ? data : data.donations || [];
-        setDonations(all.filter((d) => d.status === "COLLECTED" || d.status === "TESTED" || d.status === "STORED"));
-      }
-    } catch {
-      /* ignore */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [viewCert, setViewCert] = useState<any>(null);
 
   useEffect(() => {
-    fetchDonations();
-  }, [fetchDonations]);
+    fetch("/api/certificates").then(r => r.json()).then(d => setCerts(d.certificates || [])).finally(() => setLoading(false));
+  }, []);
 
-  const viewCertificate = async (donationId: string) => {
-    setCertLoading(true);
-    try {
-      const res = await fetch(`/api/certificate/${donationId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setCertificate(data);
-      }
-    } catch {
-      /* ignore */
-    } finally {
-      setCertLoading(false);
-    }
-  };
+  if (loading) return <div className="flex items-center justify-center h-64 text-gray-500">Chargement...</div>;
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-3 border-[#E30613] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Certificate view
-  if (certificate) {
-    return (
-      <div className="space-y-4">
-        {/* Controls - hidden when printing */}
-        <div className="flex items-center gap-3 print:hidden">
-          <button
-            onClick={() => setCertificate(null)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Retour
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 btn-primary px-4 py-2 rounded-xl text-sm font-semibold bg-[#E30613] text-white hover:bg-[#c9050f] transition-colors shadow-sm ml-auto"
-          >
-            <Printer size={16} />
-            Imprimer
-          </button>
-        </div>
-
-        {/* Certificate */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 md:p-12 shadow-sm max-w-2xl mx-auto print:border-none print:shadow-none print:rounded-none print:p-0 print:max-w-none">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <VitaLinkLogoFull />
-            </div>
-            <div className="w-24 h-0.5 bg-[#E30613] mx-auto mb-6" />
-            <h1 className="text-2xl md:text-3xl font-bold text-[#003DA5] tracking-wide">
-              CERTIFICAT DE DON DE SANG
-            </h1>
-            <div className="w-24 h-0.5 bg-[#E30613] mx-auto mt-6" />
-          </div>
-
-          {/* Body */}
-          <div className="space-y-6 text-center">
-            <p className="text-base text-gray-700 leading-relaxed">
-              Ce certificat atteste que
-            </p>
-
-            <div className="py-3">
-              <p className="text-xl font-bold text-gray-900">{certificate.donorName}</p>
-              <p className="text-sm text-gray-500 mt-1">Matricule : {certificate.matricule}</p>
-              <p className="text-sm text-gray-500">Groupe sanguin : {certificate.bloodGroup}</p>
-            </div>
-
-            <p className="text-base text-gray-700 leading-relaxed max-w-md mx-auto">
-              a effectue un don de sang en date du{" "}
-              <span className="font-semibold">{formatDate(certificate.donationDate)}</span>,
-              d&apos;une quantite de{" "}
-              <span className="font-semibold">{certificate.quantity} ml</span>,
-              au centre de transfusion sanguine{" "}
-              <span className="font-semibold">{certificate.centerName}</span>.
-            </p>
-
-            <p className="text-base text-gray-700 leading-relaxed max-w-md mx-auto mt-4">
-              Ce certificat atteste que{" "}
-              <span className="font-semibold">{certificate.donorName}</span>{" "}
-              a effectue un don de sang volontaire et non remunere, contribuant ainsi a sauver des vies.
-            </p>
-          </div>
-
-          {/* Date */}
-          <div className="text-right mt-10">
-            <p className="text-sm text-gray-500">
-              Fait le {formatDate(new Date().toISOString())}
-            </p>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-12 pt-6 border-t border-gray-200 text-center">
-            <p className="text-xs text-gray-400">
-              VitaLink - Connecter les donneurs. Sauver des vies.
-            </p>
-            <p className="text-[10px] text-gray-300 mt-1">
-              Developpe par JIDICOM
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Donations list
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Certificats de don</h1>
-        <p className="text-sm text-gray-500 mt-1">Consultez et imprimez vos certificats de don de sang</p>
+        <h1 className="text-2xl font-bold text-gray-900">Mes Certificats</h1>
+        <p className="text-gray-500 mt-1">Certificats de don sign&eacute;s par l&apos;administration</p>
       </div>
 
-      {donations.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
-          <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <FileText className="w-7 h-7 text-gray-300" />
-          </div>
-          <p className="text-gray-400 font-medium text-sm">Aucun don termine pour le moment</p>
+      {certs.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
+          <FileText size={40} className="mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-400 font-medium">Aucun certificat disponible</p>
+          <p className="text-xs text-gray-300 mt-1">Les certificats appara&icirc;tront ici apr&egrave;s signature par l&apos;admin</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {donations.map((donation) => (
-            <div
-              key={donation.id}
-              className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center justify-between gap-3 card-hover"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn(
-                    "inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold",
-                    donation.status === "STORED" ? "bg-green-100 text-green-800" :
-                    donation.status === "TESTED" ? "bg-purple-100 text-purple-800" :
-                    "bg-indigo-100 text-indigo-800"
-                  )}>
-                    {donation.status === "STORED" ? "Stocke" :
-                     donation.status === "TESTED" ? "Teste" : "Collecte"}
-                  </span>
+          {certs.map(c => (
+            <div key={c.id} className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <CheckCircle size={20} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Certificat de Don</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                      <span className="px-1.5 py-0.5 bg-[#E30613]/10 text-[#E30613] rounded font-bold">{getBloodGroupLabel(c.bloodGroup, c.rhFactor)}</span>
+                      {c.donationDate && <span>{formatDate(c.donationDate)}</span>}
+                      {c.quantity && <span>{c.quantity} ml</span>}
+                    </div>
+                    <p className="text-xs text-emerald-600 mt-0.5">Sign&eacute; par {c.signedByName}</p>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-900">
-                  Don du {formatDate(donation.donationDate)}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {donation.quantity} ml {donation.center?.name ? `- ${donation.center.name}` : ""}
-                </p>
+                <button onClick={() => setViewCert(c)} className="btn-secondary px-3 py-2 text-xs flex items-center gap-1">
+                  <FileText size={14} /> Voir
+                </button>
               </div>
-              <button
-                onClick={() => viewCertificate(donation.id)}
-                disabled={certLoading}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#003DA5] text-white hover:bg-[#002d7a] transition-colors shadow-sm flex-shrink-0 disabled:opacity-50"
-              >
-                <FileText size={14} />
-                Voir certificat
-              </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {viewCert && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50" onClick={() => setViewCert(null)}>
+          <div className="bg-white max-w-lg w-full mx-4 rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-2 border-black m-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2"><VitaLinkIcon size={32} /><div><span className="font-extrabold text-lg text-[#E30613]">Vita</span><span className="font-extrabold text-lg text-[#003DA5]">Link</span></div></div>
+                {viewCert.centerName && <p className="text-[9px] text-gray-500">{viewCert.centerName}</p>}
+              </div>
+              <div className="text-center border-y-2 border-black py-3 mb-4">
+                <h2 className="text-xl font-extrabold text-[#003DA5]">CERTIFICAT DE DON DE SANG</h2>
+              </div>
+              <p className="text-sm leading-relaxed mb-4">
+                Ce certificat atteste que <strong>{viewCert.donorName}</strong> (Matricule: <strong className="text-[#003DA5]">{viewCert.donorMatricule}</strong>),
+                groupe sanguin <strong className="text-[#E30613]">{getBloodGroupLabel(viewCert.bloodGroup, viewCert.rhFactor)}</strong>,
+                a effectu&eacute; un don de sang{viewCert.quantity ? ` de ${viewCert.quantity} ml` : ""}
+                {viewCert.donationDate ? ` le ${formatDate(viewCert.donationDate)}` : ""}
+                {viewCert.centerName ? ` au ${viewCert.centerName}` : ""}.
+              </p>
+              <div className="border-t-2 border-black pt-3">
+                <div className="flex items-center justify-between">
+                  <div><p className="text-xs text-gray-500">Sign&eacute; par :</p><p className="text-sm font-bold">{viewCert.signedByName}</p><p className="text-xs text-gray-400">{viewCert.signedAt ? formatDateTime(viewCert.signedAt) : ""}</p></div>
+                  <div className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-extrabold border border-emerald-300">CERTIFI&Eacute; &#10003;</div>
+                </div>
+              </div>
+              <p className="text-[7px] text-gray-300 mt-4 text-center">VitaLink - D&eacute;velopp&eacute; par JIDICOM</p>
+            </div>
+            <div className="p-4 flex gap-2">
+              <button onClick={() => window.print()} className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"><Printer size={16} /> Imprimer</button>
+              <button onClick={() => setViewCert(null)} className="flex-1 py-3 text-sm font-semibold text-gray-500 bg-gray-100 rounded-xl">Fermer</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

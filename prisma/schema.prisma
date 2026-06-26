@@ -228,6 +228,28 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
+model Certificate {
+  id            String   @id @default(cuid())
+  donorId       String
+  donationId    String?
+  donorName     String
+  donorMatricule String
+  bloodGroup    String
+  rhFactor      String
+  donationDate  DateTime?
+  quantity      Float?
+  centerName    String?
+  status        String   @default("PENDING")
+  createdBy     String
+  createdByName String?
+  signedBy      String?
+  signedByName  String?
+  signedAt      DateTime?
+  rejectedReason String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Campaign {
   id          String   @id @default(cuid())
   title       String

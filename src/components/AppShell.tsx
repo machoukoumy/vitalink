@@ -63,6 +63,7 @@ const adminModules: NavModule[] = [
   ]},
   { id: "outils", label: "Outils", shortLabel: "Outils", icon: <FileText size={20} />, href: "/admin/statistiques", children: [
     { label: "Statistiques", href: "/admin/statistiques" },
+    { label: "Certificats", href: "/admin/certificats" },
     { label: "Export", href: "/admin/export" },
     { label: "Messages", href: "/admin/messages" },
     { label: "Notifications", href: "/admin/notifications" },
@@ -78,6 +79,7 @@ const personnelModules: NavModule[] = [
     { label: "Donneurs", href: "/personnel/donneurs" },
     { label: "Dons", href: "/personnel/dons" },
     { label: "Rendez-vous", href: "/personnel/rendez-vous" },
+    { label: "Certificats", href: "/personnel/certificats" },
   ]},
   { id: "stock", label: "Stock", shortLabel: "Stock", icon: <Package size={20} />, href: "/personnel/stock" },
   { id: "comm", label: "Communication", shortLabel: "Comm.", icon: <Mail size={20} />, href: "/personnel/messages", children: [
