@@ -9,8 +9,8 @@ export async function GET() {
 
     let where = {};
 
-    if (user.role === "DONOR" && user.donor) {
-      where = { donorId: user.donor.id, status: "SIGNED" };
+    if (user.role === "DONOR") {
+      where = { donorId: user.id, status: "SIGNED" };
     } else if (user.role === "PERSONNEL") {
       where = { createdBy: user.id };
     } else if (["ADMIN", "SUPER_ADMIN"].includes(user.role)) {
